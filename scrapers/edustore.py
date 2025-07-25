@@ -46,7 +46,8 @@ async def get_stock_from_edustore(url, semaphore):
                 await page.goto(url, timeout=10000)
                 await page.wait_for_selector('.product-info-stock-sku', timeout=10000)
                 available_element = await page.query_selector('.product-info-stock-sku .stock.available')
-                preoderable_element = await page.query_selector('.product-info-stock-sku .stock.lagerstatus.lagerstatus-green')
+                preoderable_element_green = await page.query_selector('.product-info-stock-sku .stock.lagerstatus.lagerstatus-green')
+                preoderable_element_orange = await page.query_selector('.product-info-stock-sku .stock.lagerstatus.lagerstatus-orange')
                 unavailable_element = await page.query_selector('.product-info-stock-sku .stock.unavailable')
 
                 await browser.close()
@@ -58,7 +59,7 @@ async def get_stock_from_edustore(url, semaphore):
                     return "Ja"
                 elif unavailable_element:
                     return "Nein"
-                elif preoderable_element:
+                elif preoderable_element_green or preoderable_element_orange:
                     return "Vorbestellbar"
                 else:
                     return "?"

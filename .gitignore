@@ -32,3 +32,6 @@ playwright/
 *.egg-info/
 dist/
 build/
+
+# Local scripts
+*.sh
