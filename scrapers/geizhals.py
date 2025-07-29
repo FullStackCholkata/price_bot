@@ -19,9 +19,15 @@ async def get_price_from_geizhals(url, semaphore):
                 html = await price_handle.inner_html()
 
                 soup = BeautifulSoup(html, "html.parser")
-                price_text = soup.find(class_="gh_price").text
+                price = soup.find(class_="gh_price")
+                if isinstance(price, NoneType):
+                    return "No listings"
+                else:
+                    price_text = price.text    
 
                 await browser.close()
+
+                
 
                 # Debug line
                 print(f"[{get_timestamp()}]     {Colors.GREEN}Geizhals scrape completed{Colors.END}")
