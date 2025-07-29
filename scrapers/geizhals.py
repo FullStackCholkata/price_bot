@@ -20,7 +20,7 @@ async def get_price_from_geizhals(url, semaphore):
 
                 soup = BeautifulSoup(html, "html.parser")
                 price = soup.find(class_="gh_price")
-                if isinstance(price, NoneType):
+                if price is None:
                     return "No listings"
                 else:
                     price_text = price.text    
