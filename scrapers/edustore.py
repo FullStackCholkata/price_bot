@@ -1,8 +1,6 @@
 from bs4 import BeautifulSoup
 from playwright.async_api import async_playwright
-from utils.colors import Colors
-from utils.timing import get_timestamp
-from utils.formatters import standardize_price_format
+from utils import Colors, get_timestamp, standardize_price_format, get_random_headers
 
 # ASYNC - Scrapes the passed URL (should be a edustore link) for the product price
 async def get_price_from_edustore(url, semaphore):
@@ -14,7 +12,8 @@ async def get_price_from_edustore(url, semaphore):
         try:
             async with async_playwright() as pw:
                 browser = await pw.chromium.launch(headless=True)
-                page = await browser.new_page()
+                context = await browser.new_context(extra_http_headers=get_random_headers(referer=url))
+                page = await context.new_page()
                 await page.goto(url, timeout=10000)
                 await page.wait_for_selector('.price-wrapper', timeout=10000)
                 html = await page.content()

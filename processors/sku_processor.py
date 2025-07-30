@@ -1,5 +1,5 @@
 import asyncio
-from utils import Colors, get_timestamp, retry_with_backoff
+from utils import Colors, get_timestamp, retry_after_timeout
 from scrapers import *
 
 # Processes a single SKU's data concurrently
@@ -25,33 +25,33 @@ async def process_sku(row, last_prices, semaphore):
         tasks.append(("Geizhals Preis", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Geizhals Preis"]))))
         tasks.append(("Campuspoint Preis", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Campuspoint Preis"]))))
         tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Verfügbar"]))))
-        tasks.append(("edustore VK", get_price_from_edustore(url_edu, semaphore)))
+        tasks.append(("edustore VK", retry_after_timeout(get_price_from_edustore, url_edu, semaphore)))
             
     else:
         print(f"[{get_timestamp()}]     {Colors.YELLOW}Fetching new prices for SKU group: {sku_first_block}{Colors.END}")
         
         if url_gh != "^":
-            tasks.append(("Geizhals Preis", get_price_from_geizhals(url_gh, semaphore)))
+            tasks.append(("Geizhals Preis", retry_after_timeout(get_price_from_geizhals, url_gh, semaphore)))
         else:
-            tasks.append(("Geizhals Preis", asyncio.create_task(asyncio.sleep(0.1, result="No URL"))))
+            tasks.append(("Geizhals Preis", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
         
         # Add small delay before next scraper
         await asyncio.sleep(1)
         
         if url_camp != "^":
-            tasks.append(("Campuspoint Preis", get_price_from_campuspoint(url_camp, semaphore)))
+            tasks.append(("Campuspoint Preis", retry_after_timeout(get_price_from_campuspoint, url_camp, semaphore)))
         else:
-            tasks.append(("Campuspoint Preis", asyncio.create_task(asyncio.sleep(0.1, result="No URL"))))
+            tasks.append(("Campuspoint Preis", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
 
         # Add small delay before next scraper
         await asyncio.sleep(1)
 
         if url_edu != "^":
-            tasks.append(("edustore VK", get_price_from_edustore(url_edu, semaphore)))
-            tasks.append(("Verfügbar", get_stock_from_edustore(url_edu, semaphore)))
+            tasks.append(("edustore VK", retry_after_timeout(get_price_from_edustore, url_edu, semaphore)))
+            tasks.append(("Verfügbar", retry_after_timeout(get_stock_from_edustore, url_edu, semaphore)))
         else:
-            tasks.append(("edustore VK", asyncio.create_task(asyncio.sleep(0.1, result="No URL"))))
-            tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result="No URL"))))
+            tasks.append(("edustore VK", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
+            tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
 
     results = await asyncio.gather(*[task[1] for task in tasks])
     

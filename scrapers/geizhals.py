@@ -12,23 +12,25 @@ async def get_price_from_geizhals(url, semaphore):
         try:
             async with async_playwright() as pw:
                 browser = await pw.chromium.launch(headless=True)
-                page = await browser.new_page()
-                headers = get_random_headers(referer=url) 
-                await page.goto(url, timeout=10000)
-                price_handle = await page.wait_for_selector('.offerlist', timeout=10000)
-                html = await price_handle.inner_html()
+                # Apply headers at the context level:
+                context = await browser.new_context(extra_http_headers=get_random_headers(referer=url))
+                page = await context.new_page()
 
-                soup = BeautifulSoup(html, "html.parser")
-                price = soup.find(class_="gh_price")
-                if price is None:
-                    return "No listings"
-                else:
-                    price_text = price.text    
+                try: 
+                    await page.goto(url, timeout=10000)
+                    html = await page.content()
 
-                await browser.close()
+                    soup = BeautifulSoup(html, "html.parser")
+                    price = soup.select_one("section#offerlist span.gh_price")
+                    if price is None:
+                        print(f"[{get_timestamp()}]     {Colors.YELLOW}No Geizhals listings founnd{Colors.END}")
+                        return "No listings"
+                    else:
+                        price_text = price.text    
+                finally:
+                    await browser.close()
 
-                
-
+            
                 # Debug line
                 print(f"[{get_timestamp()}]     {Colors.GREEN}Geizhals scrape completed{Colors.END}")
 

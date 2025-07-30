@@ -2,18 +2,21 @@ import asyncio
 import random
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
 
-async def retry_with_backoff(func, max_retries=3, base_delay=1):
-    for attempt in range(max_retries):
+async def retry_after_timeout(func, *args, retries = 3, delay = 2):
+    """
+    Calls an async `scrape_fn(*args, **kwargs)`, retrying up to `retries` times
+    if a Playwright TimeoutError is hit. Waits `delay` seconds between tries.
+    """
+    last_exc = None
+    for attempt in range(1, retries + 1):
         try:
-            return await func()
-        except (TimeoutError, PlaywrightTimeoutError, asyncio.TimeoutError) as e:
-            if attempt == max_retries - 1:
-                print(f"Max retries reached. Final error: {e}")
-                return "Timeout after retries"
-            
-            delay = base_delay * (2 ** attempt) + random.uniform(0, 1)
-            print(f"Timeout on attempt {attempt + 1}, retrying in {delay:.2f} seconds...")
-            await asyncio.sleep(delay)
-        except Exception as e:
-            print(f"Non-timeout error: {e}")
-            raise e
+            return await func(*args)
+        except PlaywrightTimeoutError as e:
+            last_exc = e
+            print(f"[{get_timestamp()}]     {Colors.YELLOW}[Attempt {attempt}/{retries}] TimeoutError, retrying in {delay}s…{Colors.END}")
+            if attempt < retries:
+                await asyncio.sleep(delay)
+            else:
+                print(f"[{get_timestamp()}]     {Colors.RED}[Attempt {attempt}/{retries}] Giving up after timeout.")
+    # if we exhausted all retries, re-raise or return a sentinel
+    raise last_exc
