@@ -10,7 +10,6 @@ async def process_sku(row, last_prices, semaphore):
     url_edu = row["edustore link"]
     
     # Extracts first block for comparison
-    print(sku.split('-'))
     sku_first_block = sku.split('-')[0]
     
     # Debug line
