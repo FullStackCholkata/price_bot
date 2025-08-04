@@ -29,7 +29,7 @@ async def get_price_from_edustore(url, semaphore):
                 return standardize_price_format(price_text)
         except Exception as e:
             print(f"[{get_timestamp()}]     {Colors.RED}Error getting Edustore price for {url}: {e}{Colors.END}")
-            return "Error get_price_from_edustore()"
+            raise e 
 
 
 # ASYNC - Scrapes the passed URL (should be a edustore link) for the product stock/availability
@@ -38,7 +38,7 @@ async def get_stock_from_edustore(url, semaphore):
         return "N/A"
     
     async with semaphore:
-        try:
+        try: 
             async with async_playwright() as pw:
                 browser = await pw.chromium.launch(headless=True)
                 page = await browser.new_page()
@@ -62,6 +62,6 @@ async def get_stock_from_edustore(url, semaphore):
                     return "Vorbestellbar"
                 else:
                     return "?"
-        except Exception as e:
+        except Exception as e: 
             print(f"[{get_timestamp()}]     {Colors.RED}Error getting Edustore stock for {url}: {e}{Colors.END}")
-            return "Error get_stock_from_edustore()"
+            raise e 

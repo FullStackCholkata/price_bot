@@ -23,8 +23,8 @@ async def main_async():
         for row in records:
             try:
 
-                # Adds a 3 second delay between row processings, so there is some time between requests
-                await asyncio.sleep(3)
+                # Adds a 1 second delay between row processings, so there is some time between requests
+                await asyncio.sleep(1)
 
                 # Process SKU concurrently
                 sku, prices = await process_sku(row, last_prices, semaphore)

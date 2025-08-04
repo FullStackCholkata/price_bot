@@ -10,6 +10,7 @@ async def process_sku(row, last_prices, semaphore):
     url_edu = row["edustore link"]
     
     # Extracts first block for comparison
+    print(sku.split('-'))
     sku_first_block = sku.split('-')[0]
     
     # Debug line
@@ -18,7 +19,7 @@ async def process_sku(row, last_prices, semaphore):
     tasks = []
 
     # Checks to make sure the SKU isn't the first being processed and that it is a sub-SKU of the privious one
-    if last_prices and last_prices["SKU"].split('-')[0] == sku_first_block:
+    if last_prices and any(item in set(sku.split('-')) for item in set(last_prices["SKU"].split('-'))):
         print(f"[{get_timestamp()}]     {Colors.YELLOW}Using cached prices for SKU group: {sku_first_block}{Colors.END}")
         
         # Use cached values for same SKU group
