@@ -15,6 +15,10 @@ async def get_price_from_campuspoint(url, semaphore):
                 context = await browser.new_context(extra_http_headers=get_random_headers(referer=url))
                 page = await context.new_page()
                 await page.goto(url, timeout=10000)
+                product_not_available = await page.query_selector('div.warning.message.flex.items-center')
+                if product_not_available:
+                    print(f"[{get_timestamp()}]     {Colors.YELLOW}No Campuspoint listings found{Colors.END}")
+                    return "No listings"
                 price_handle = await page.wait_for_selector(".price-box span.price--current", state="visible", timeout=10_000)
                 price = await price_handle.inner_text()
                 await browser.close()

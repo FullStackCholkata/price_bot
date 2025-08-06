@@ -23,7 +23,7 @@ async def get_price_from_geizhals(url, semaphore):
                     soup = BeautifulSoup(html, "html.parser")
                     price = soup.select_one("section#offerlist span.gh_price")
                     if price is None:
-                        print(f"[{get_timestamp()}]     {Colors.YELLOW}No Geizhals listings founnd{Colors.END}")
+                        print(f"[{get_timestamp()}]     {Colors.YELLOW}No Geizhals listings found{Colors.END}")
                         return "No listings"
                     else:
                         price_text = price.text    
