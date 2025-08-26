@@ -59,8 +59,8 @@ def format_availability_column(worksheet, row_index, availability_value):
                     "sheetId": worksheet.id,
                     "startRowIndex": row_index - 1,
                     "endRowIndex": row_index,
-                    "startColumnIndex": 12,  # Column M (0-indexed, so M = 12)
-                    "endColumnIndex": 13
+                    "startColumnIndex": 2,  # Column C (0-indexed, so C = 2)
+                    "endColumnIndex": 3
                 },
                 "cell": {
                     "userEnteredFormat": {

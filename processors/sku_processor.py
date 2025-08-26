@@ -8,7 +8,8 @@ async def process_sku(row, last_prices, semaphore):
     url_gh = row["Geizhals link"]
     url_camp = row["Campuspoint link"]
     url_edu = row["edustore link"]
-    
+    url_it = row["ITScope link"]
+
     # Extracts first block for comparison
     sku_first_block = sku.split('-')[0]
     
@@ -26,6 +27,7 @@ async def process_sku(row, last_prices, semaphore):
         tasks.append(("Campuspoint Preis", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Campuspoint Preis"]))))
         tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Verfügbar"]))))
         tasks.append(("edustore VK", retry_after_timeout(get_price_from_edustore, url_edu, semaphore)))
+        tasks.append(("TD Synnex", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["TD Synnex"]))))
             
     else:
         print(f"[{get_timestamp()}]     {Colors.YELLOW}Fetching new prices for SKU group: {sku_first_block}{Colors.END}")
@@ -52,6 +54,11 @@ async def process_sku(row, last_prices, semaphore):
         else:
             tasks.append(("edustore VK", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
             tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result="No valid URL"))))
+
+        # Add small delay before next scraper
+        await asyncio.sleep(1)
+
+        tasks.append(("TD Synnex", retry_after_timeout(get_tdsynnex_from_itsocpe, url_it, semaphore)))    
 
     results = await asyncio.gather(*[task[1] for task in tasks])
     
