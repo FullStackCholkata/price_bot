@@ -28,7 +28,6 @@ async def main_async():
 
                 # Process SKU concurrently
                 sku, prices = await process_sku(row, last_prices, semaphore)
-                print(prices)
 
                 if sku in sku_lookup_table:
                     row_index = sku_lookup_table[sku]

@@ -24,6 +24,7 @@ Thumbs.db
 # Secret or local config files
 price-parser-script-da966288cd5d.json
 config.py
+itscope_config.py
 *.pem
 
 # Playwright browsers (if you ever install them locally)
