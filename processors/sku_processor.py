@@ -1,3 +1,4 @@
+import json
 import asyncio
 from utils import Colors, get_timestamp, retry_after_timeout
 from scrapers import *
@@ -8,7 +9,6 @@ async def process_sku(row, last_prices, semaphore):
     url_gh = row["Geizhals link"]
     url_camp = row["Campuspoint link"]
     url_edu = row["edustore link"]
-    url_it = row["ITScope link"]
     itclient = ITscopeClient()
 
     # Extracts first block for comparison
@@ -29,6 +29,8 @@ async def process_sku(row, last_prices, semaphore):
         tasks.append(("Verfügbar", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["Verfügbar"]))))
         tasks.append(("edustore VK", retry_after_timeout(get_price_from_edustore, url_edu, semaphore)))
         tasks.append(("INGRAM", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["INGRAM"]))))
+        tasks.append(("ALSO", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["ALSO"]))))
+        tasks.append(("TD Synnex", asyncio.create_task(asyncio.sleep(0.1, result=last_prices["TD Synnex"]))))
             
     else:
         print(f"[{get_timestamp()}]     {Colors.YELLOW}Fetching new prices for SKU group: {sku_first_block}{Colors.END}")
@@ -61,21 +63,39 @@ async def process_sku(row, last_prices, semaphore):
 
         # Fix ITScope integration - get data synchronously then process
         try:
-            print(f"[{get_timestamp()}] {Colors.CYAN}Calling ITScope for SKU: {sku}{Colors.END}")
-            data = itclient.get_product_by_id(sku)
-            print(f"[{get_timestamp()}] {Colors.CYAN}ITScope returned: {data}{Colors.END}")
-            
+            print(f"[{get_timestamp()}]     {Colors.CYAN}Calling ITScope for SKU: {sku}{Colors.END}")
+            data = itclient.get_product_by_id(sku_first_block)
+            print(f"[{get_timestamp()}]     {Colors.CYAN}ITScope returned:\n {json.dumps(data, indent=4, ensure_ascii=False)}{Colors.END}")
+
             if data:
                 ingram_availability = get_availability_for_ingram(data)
-                print(f"[{get_timestamp()}] {Colors.CYAN}Ingram availability result: {ingram_availability}{Colors.END}")
+                print(f"[{get_timestamp()}]     {Colors.GREEN}Ingram availability result: {ingram_availability}{Colors.END}")
+
+                also_availability = get_availability_for_also(data)
+                print(f"[{get_timestamp()}]     {Colors.GREEN}ALSO availability result: {also_availability}{Colors.END}")
+
+                tdsynnex_availability = get_availability_for_tdsynnex(data)
+                print(f"[{get_timestamp()}]     {Colors.GREEN}TD Synnex availability result: {tdsynnex_availability}{Colors.END}")
             else:
-                print(f"[{get_timestamp()}] {Colors.RED}ITScope returned empty data{Colors.END}")
-                ingram_availability = "No data from ITScope"
+                print(f"[{get_timestamp()}]     {Colors.RED}ITScope returned empty data{Colors.END}")
+                ingram_availability = "No data"
+                also_availability = "No data"
+                tdsynnex_availability = "No data"
                 
             tasks.append(("INGRAM", asyncio.create_task(asyncio.sleep(0.1, result=ingram_availability))))
+            tasks.append(("ALSO", asyncio.create_task(asyncio.sleep(0.1, result=also_availability))))
+            tasks.append(("TD Synnex", asyncio.create_task(asyncio.sleep(0.1, result=tdsynnex_availability))))
+
+        except json.JSONDecodeError as e:
+            print(f"[{get_timestamp()}]     {Colors.RED}ITScope error for {sku}: {e}{Colors.END}")
+            tasks.append(("INGRAM", asyncio.create_task(asyncio.sleep(0.1, result="No such product"))))
+            tasks.append(("ALSO", asyncio.create_task(asyncio.sleep(0.1, result="No such product"))))
+            tasks.append(("TD Synnex", asyncio.create_task(asyncio.sleep(0.1, result="No such product"))))
         except Exception as e:
-            print(f"[{get_timestamp()}] {Colors.RED}ITScope error for {sku}: {e}{Colors.END}")
+            print(f"[{get_timestamp()}]     {Colors.RED}ITScope error for {sku}: {e}{Colors.END}")
             tasks.append(("INGRAM", asyncio.create_task(asyncio.sleep(0.1, result="Error fetching data"))))
+            tasks.append(("ALSO", asyncio.create_task(asyncio.sleep(0.1, result="Error fetching data"))))
+            tasks.append(("TD Synnex", asyncio.create_task(asyncio.sleep(0.1, result="Error fetching data"))))
 
     results = await asyncio.gather(*[task[1] for task in tasks])
     

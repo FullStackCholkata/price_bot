@@ -1,6 +1,6 @@
 import asyncio
 from datetime import datetime
-from utils import Colors, get_timestamp, format_availability_column
+from utils import Colors, get_timestamp, format_availability_column, format_itscope_availability_columns
 from google_sheets import setup_google_worksheet, get_data, get_sku_list
 from processors import process_sku
 from config import COLUMN_MAP, SEMAPHORE_LIMIT
@@ -28,7 +28,10 @@ async def main_async():
 
                 # Process SKU concurrently
                 sku, prices = await process_sku(row, last_prices, semaphore)
-
+                if not sku:
+                    print(f"[{get_timestamp()}]     {Colors.RED}Error in SKU Processor: {e}{Colors.END}")
+                    continue
+                
                 if sku in sku_lookup_table:
                     row_index = sku_lookup_table[sku]
 
@@ -52,7 +55,19 @@ async def main_async():
                         availability_value = prices.get("Verfügbar")
                         if availability_value is not None:
                             format_availability_column(worksheet, row_index, availability_value)
+                        
+                        availability_value = prices.get("INGRAM")
+                        if availability_value is not None:
+                            format_itscope_availability_columns(worksheet, row_index, availability_value, 5)
 
+                        availability_value = prices.get("ALSO")
+                        if availability_value is not None:
+                            format_itscope_availability_columns(worksheet, row_index, availability_value, 4)
+
+                        availability_value = prices.get("TD Synnex")
+                        if availability_value is not None:
+                            format_itscope_availability_columns(worksheet, row_index, availability_value, 3)       
+                                                 
                         print(f"[{get_timestamp()}]     {Colors.GREEN}Successfully updated {sku}{Colors.END}")
                     except Exception as e:
                         print(f"[{get_timestamp()}]     {Colors.RED}Error updating spreadsheet for SKU {sku}: {e}{Colors.END}")

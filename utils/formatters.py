@@ -36,7 +36,7 @@ def standardize_price_format(price_text):
 
 # Formats the availabilitycomun in the spreadsheet
 def format_availability_column(worksheet, row_index, availability_value):
-    """Formats column M cell based on availability value with conditional colors."""
+    """Formats cell based on availability value with conditional colors."""
     try:
         
         # Determine the background color based on availability
@@ -61,6 +61,49 @@ def format_availability_column(worksheet, row_index, availability_value):
                     "endRowIndex": row_index,
                     "startColumnIndex": 2,  # Column C (0-indexed, so C = 2)
                     "endColumnIndex": 3
+                },
+                "cell": {
+                    "userEnteredFormat": {
+                        "backgroundColor": background_color,
+                        "horizontalAlignment": "CENTER"
+                    }
+                },
+                "fields": "userEnteredFormat.backgroundColor,userEnteredFormat.horizontalAlignment,userEnteredFormat.textFormat.bold"
+            }
+        }]
+        
+        body = {"requests": requests}
+        worksheet.spreadsheet.batch_update(body)
+        
+    except Exception as e:
+        print(f"[{get_timestamp()}]     {Colors.RED}Error formatting availability cell: {e}{Colors.END}")
+
+def format_itscope_availability_columns(worksheet, row_index, availability_value: str, startColumnIndex: int):
+    """Formats cell based on availability value with conditional colors."""
+    try:
+        
+        # Determine the background color based on availability
+        if "auf Lager" in availability_value:
+            background_color = {"red": 0.69, "green": 1.0, "blue": 0.686}  # Green
+
+        elif re.match(r'\d{2}/\d{2}/\d{2}', availability_value):
+            background_color = {"red": 0.808, "green": 1.0, "blue": 0.804}  # Light green
+
+        elif availability_value == "nicht verfügbar" or availability_value == "No data":
+            background_color = {"red": 1.0, "green": 0.604, "blue": 0.604}  # Light red
+
+        else:
+            background_color = {"red": 1.0, "green": 0.812, "blue": 0.55}  # Light yellow
+        
+        # Create the formatting request
+        requests = [{
+            "repeatCell": {
+                "range": {
+                    "sheetId": worksheet.id,
+                    "startRowIndex": row_index - 1,
+                    "endRowIndex": row_index,
+                    "startColumnIndex": startColumnIndex,
+                    "endColumnIndex": startColumnIndex + 1
                 },
                 "cell": {
                     "userEnteredFormat": {

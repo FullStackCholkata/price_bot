@@ -13,5 +13,7 @@ __all__ = [
     "get_price_from_edustore",
     "get_stock_from_edustore",
     "ITscopeClient",
-    'get_availability_for_ingram'
+    'get_availability_for_ingram',
+    'get_availability_for_also',
+    'get_availability_for_tdsynnex'
 ]
