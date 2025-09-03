@@ -1,3 +1,12 @@
+# Price Bot Application Dependencies
+#
+# Core dependencies for Austrian e-commerce price monitoring application
+# - Web scraping: BeautifulSoup, Playwright for browser automation
+# - Google Sheets API: gspread and Google auth libraries
+# - Network optimization: aiohappyeyeballs for DNS resolution
+#
+# Install with: pip install -r requirements.txt
+
 beautifulsoup4>=4.12.0
 playwright>=1.40.0
 gspread>=5.12.0

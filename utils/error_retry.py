@@ -1,12 +1,36 @@
+"""
+Retry mechanism utilities for robust network operations and error handling.
+
+Provides async retry functionality for web scraping operations that may
+fail due to network timeouts, rate limiting, or temporary site issues.
+Implements exponential backoff and comprehensive error logging.
+"""
+
 import asyncio
 import random
 from playwright.async_api import TimeoutError as PlaywrightTimeoutError
-from utils import Colors, get_timestamp  # ADD THIS LINE
+from .colors import Colors
+from .timing import get_timestamp
 
-async def retry_after_timeout(func, *args, retries = 3, delay = 2):
+async def retry_after_timeout(func, *args, retries=3, delay=2):
     """
-    Calls an async `scrape_fn(*args, **kwargs)`, retrying up to `retries` times
-    if a Playwright TimeoutError is hit. Waits `delay` seconds between tries.
+    Execute an async function with automatic retry on timeout or network errors.
+    
+    Retries the provided async function up to the specified number of times
+    if Playwright timeouts, asyncio timeouts, or other exceptions occur.
+    Implements colored logging for retry attempts and final failure states.
+    
+    Args:
+        func: Async function to execute
+        *args: Arguments to pass to the function
+        retries (int): Maximum number of retry attempts (default: 3)
+        delay (int): Delay in seconds between retry attempts (default: 2)
+        
+    Returns:
+        Result of successful function execution or error message string
+        
+    Usage:
+        result = await retry_after_timeout(scrape_function, url, semaphore)
     """
     last_exc = None
     for attempt in range(1, retries + 1):

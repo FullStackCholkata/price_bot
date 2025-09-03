@@ -1,3 +1,16 @@
+"""
+Main execution module for the price bot application.
+
+Orchestrates the entire price collection workflow including:
+- Google Sheets integration and data retrieval
+- Concurrent web scraping from multiple e-commerce platforms
+- Data processing and formatting
+- Batch updates to Google Sheets with color coding
+
+The module handles rate limiting, error recovery, and performance monitoring
+for robust operation across Austrian e-commerce and B2B distributor platforms.
+"""
+
 import asyncio
 from datetime import datetime
 from utils import Colors, get_timestamp, format_availability_column, format_itscope_availability_columns
@@ -6,6 +19,13 @@ from processors import process_sku
 from config import COLUMN_MAP, SEMAPHORE_LIMIT
 
 async def main_async():
+    """
+    Main asynchronous execution function for price collection workflow.
+    
+    Coordinates the entire process from Google Sheets data retrieval through
+    concurrent web scraping to final data formatting and batch updates.
+    Implements rate limiting and error handling for robust operation.
+    """
     # Time stamp used for run-time calculation only; ignore
     start_time = datetime.now()
     
@@ -106,6 +126,12 @@ async def main_async():
 
 
 def main():
+    """
+    Synchronous entry point wrapper for the async main function.
+    
+    Provides a simple interface for running the price bot from command line
+    or other synchronous contexts by wrapping the async execution.
+    """
     # Runs the async main function
     asyncio.run(main_async())
 
