@@ -129,7 +129,7 @@ def format_itscope_availability_columns(worksheet, row_index, availability_value
     Applies background colors to ITScope distributor columns based on stock status:
     - Green: In stock (contains "auf Lager")
     - Light Green: Available on date (DD/MM/YY format)
-    - Light Red: Not available ("nicht verfügbar", "No data")
+    - Light Red: Not available ("nicht verfügbar", "no data")
     - Light Yellow: Other status (unknown, pending, etc.)
     
     Args:
@@ -150,7 +150,7 @@ def format_itscope_availability_columns(worksheet, row_index, availability_value
         elif re.match(r'\d{2}/\d{2}/\d{2}', availability_value):
             background_color = {"red": 0.808, "green": 1.0, "blue": 0.804}  # Light green
 
-        elif availability_value == "nicht verfügbar" or availability_value == "No data":
+        elif availability_value == "nicht verfügbar" or availability_value == "no data":
             background_color = {"red": 1.0, "green": 0.604, "blue": 0.604}  # Light red
 
         else:

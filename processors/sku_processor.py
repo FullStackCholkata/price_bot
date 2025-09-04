@@ -110,9 +110,9 @@ async def process_sku(row, last_prices, semaphore):
                 print(f"[{get_timestamp()}]     {Colors.GREEN}TD Synnex availability result: {tdsynnex_availability}{Colors.END}")
             else:
                 print(f"[{get_timestamp()}]     {Colors.RED}ITScope returned empty data{Colors.END}")
-                ingram_availability = "No data"
-                also_availability = "No data"
-                tdsynnex_availability = "No data"
+                ingram_availability = "no data"
+                also_availability = "no data"
+                tdsynnex_availability = "no data"
                 
             # Add distributor availability data to task list
             tasks.append(("INGRAM", asyncio.create_task(asyncio.sleep(0.1, result=ingram_availability))))
